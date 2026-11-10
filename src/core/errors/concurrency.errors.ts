@@ -49,3 +49,8 @@ export class LockAcquisitionAbortedError extends ConcurrencyError {
     );
   }
 }
+export class LockUnavailableError extends ConcurrencyError {
+  constructor(public readonly key: string) {
+    super(`Lock "${key}" is currently unavailable`, "LOCK_UNAVAILABLE");
+  }
+}
