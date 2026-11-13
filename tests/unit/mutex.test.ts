@@ -184,4 +184,42 @@ describe("Mutex", () => {
     releaseFirst();
     await first;
   });
+
+  it("should preserve both callback and release errors", async () => {
+    const callbackError = new Error("Callback failed");
+    const releaseError = new Error("Release failed");
+
+    const provider: LockProvider = {
+      acquire: async () => ({
+        release: async () => {
+          throw releaseError;
+        },
+      }),
+    };
+
+    const mutex = new Mutex(provider);
+
+    await expect(
+      mutex.withLock("resource:1", async () => {
+        throw callbackError;
+      }),
+    ).rejects.toMatchObject({
+      errors: [callbackError, releaseError],
+    });
+  });
+  it("should propagate release errors", async () => {
+    const provider: LockProvider = {
+      acquire: async () => ({
+        release: async () => {
+          throw new Error("Release failed");
+        },
+      }),
+    };
+
+    const mutex = new Mutex(provider);
+
+    await expect(mutex.withLock("resource:1", () => "success")).rejects.toThrow(
+      "Release failed",
+    );
+  });
 });
