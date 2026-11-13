@@ -177,4 +177,89 @@ describe("MemoryLockAdapter", () => {
       TypeError,
     );
   });
+
+  it("should prevent overlapping ownership across many requests", async () => {
+    const adapter = new MemoryLockAdapter();
+
+    let activeOperations = 0;
+    let maximumActiveOperations = 0;
+
+    const totalRequests = 50;
+
+    const operations = Array.from({ length: totalRequests }, async () => {
+      const handle = await adapter.acquire(
+        "shared:resource",
+        resolveLockOptions({
+          waitTimeoutMs: 10000,
+        }),
+      );
+
+      try {
+        activeOperations++;
+
+        maximumActiveOperations = Math.max(
+          maximumActiveOperations,
+          activeOperations,
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      } finally {
+        activeOperations--;
+        await handle.release();
+      }
+    });
+
+    await Promise.all(operations);
+
+    expect(maximumActiveOperations).toBe(1);
+    expect(activeOperations).toBe(0);
+  });
+
+  it("should remove timed-out requests from the waiting queue", async () => {
+    const adapter = new MemoryLockAdapter();
+
+    const first = await adapter.acquire("resource:1", resolveLockOptions());
+
+    await expect(
+      adapter.acquire(
+        "resource:1",
+        resolveLockOptions({
+          waitTimeoutMs: 20,
+        }),
+      ),
+    ).rejects.toThrow(LockAcquisitionTimeoutError);
+
+    await first.release();
+
+    // Resource must be available after cleanup.
+    const next = await adapter.acquire("resource:1", resolveLockOptions());
+
+    await next.release();
+  });
+
+  it("should remove cancelled requests from the waiting queue", async () => {
+    const adapter = new MemoryLockAdapter();
+
+    const first = await adapter.acquire("resource:1", resolveLockOptions());
+
+    const controller = new AbortController();
+
+    const waiting = adapter.acquire(
+      "resource:1",
+      resolveLockOptions({
+        waitTimeoutMs: 5000,
+        signal: controller.signal,
+      }),
+    );
+
+    controller.abort();
+
+    await expect(waiting).rejects.toThrow(LockAcquisitionAbortedError);
+
+    await first.release();
+
+    const next = await adapter.acquire("resource:1", resolveLockOptions());
+
+    await next.release();
+  });
 });
