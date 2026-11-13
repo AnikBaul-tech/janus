@@ -1,29 +1,64 @@
-# janus :- Concurrency SDK
+# Concurrency SDK
 
 A modular concurrency management toolkit for Node.js.
 
-## Goals
+## Features
 
-- Simplify concurrency management.
-- Provide reusable synchronization primitives.
-- Support pluggable synchronization providers.
-- Provide consistent resource lifecycle management.
-- Support both local and distributed synchronization.
+- Mutex-based resource synchronization.
+- FIFO waiting queues.
+- Lock acquisition timeout.
+- AbortSignal cancellation.
+- Automatic lock release.
+- Pluggable lock providers.
+- TypeScript support.
+
+## Installation
+
+```bash
+npm install concurrency-sdk
+```
+
+## Basic Usage
+
+```typescript
+import { createConcurrencyManager } from "concurrency-sdk";
+
+const manager = createConcurrencyManager({
+  provider: "memory",
+});
+
+await manager.mutex.withLock("booking:seat:A12", async () => {
+  console.log("Booking seat...");
+});
+```
+
+## Available Providers
+
+| Provider | Scope                  |
+| -------- | ---------------------- |
+| Memory   | Single Node.js process |
 
 ## Development
 
-Install dependencies:
-
+```bash
 npm install
-
-Build:
-
-npm run build
-
-Run tests:
-
-npm test
-
-Type checking:
-
 npm run typecheck
+npm test
+npm run build
+```
+
+## Architecture
+
+The SDK follows an adapter-based architecture.
+
+- Features implement concurrency behavior.
+- Providers implement synchronization mechanisms.
+- The manager exposes initialized features.
+- The factory handles dependency injection.
+
+## Limitations
+
+The Memory provider only coordinates operations
+within a single Node.js process.
+
+It does not provide distributed synchronization.
