@@ -155,7 +155,6 @@ export class MemoryLockAdapter implements LockProvider {
     }
 
     waiter.reject(error);
-
   }
 
   /**
@@ -164,7 +163,7 @@ export class MemoryLockAdapter implements LockProvider {
   private detachWaiter(waiter: LockWaiter): void {
     if (waiter.timer !== undefined) {
       clearTimeout(waiter.timer);
-      delete waiter.timer ;
+      delete waiter.timer;
     }
 
     if (waiter.signal && waiter.abortListener) {

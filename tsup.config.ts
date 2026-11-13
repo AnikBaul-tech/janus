@@ -1,4 +1,3 @@
-
 import { defineConfig } from "tsup";
 
 export default defineConfig({
@@ -9,5 +8,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   splitting: false,
-  treeshake: true
+  treeshake: true,
 });

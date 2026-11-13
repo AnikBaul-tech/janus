@@ -1,4 +1,3 @@
-
 {
   "name": "janus",
   "version": "0.1.0",
@@ -29,6 +28,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:package": "node tests/package-smoke.mjs"
   }
 }

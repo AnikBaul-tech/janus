@@ -9,7 +9,7 @@ export interface LockProvider {
    *
    * Rejects with a typed error if acquisition fails,
    * times out, or is cancelled.
-   * 
+   *
    * key :- resource identifier
    * options :- cotrols the acquisition process
    * Promise :- to acquire the lock , it may need time
