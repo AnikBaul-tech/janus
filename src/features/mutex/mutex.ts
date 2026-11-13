@@ -10,6 +10,7 @@ export class Mutex {
    * Acquires a resource lock, executes a callback,
    * and releases the lock automatically.
    */
+
   async withLock<T>(
     key: string,
     callback: () => T | Promise<T>,
@@ -19,10 +20,35 @@ export class Mutex {
 
     const handle = await this.provider.acquire(key, resolvedOptions);
 
+    let result!: T;
+    let callbackFailed = false;
+    let callbackError: unknown;
+
     try {
-      return await callback();
-    } finally {
-      await handle.release();
+      result = await callback();
+    } catch (error) {
+      callbackFailed = true;
+      callbackError = error;
     }
+
+    try {
+      await handle.release();
+    } catch (releaseError) {
+      if (callbackFailed) {
+        throw new AggregateError(
+          [callbackError, releaseError],
+          "Both the protected operation and lock release failed",
+          { cause: releaseError },
+        );
+      }
+
+      throw releaseError;
+    }
+
+    if (callbackFailed) {
+      throw callbackError;
+    }
+
+    return result;
   }
 }
