@@ -54,3 +54,50 @@ export class LockUnavailableError extends ConcurrencyError {
     super(`Lock "${key}" is currently unavailable`, "LOCK_UNAVAILABLE");
   }
 }
+
+export class SemaphoreUnavailableError extends ConcurrencyError {
+  constructor(public readonly key: string) {
+    super(
+      `No permit is currently available for semaphore "${key}"`,
+      "SEMAPHORE_UNAVAILABLE",
+    );
+  }
+}
+
+export class SemaphoreCapacityMismatchError extends ConcurrencyError {
+  constructor(
+    public readonly key: string,
+    public readonly existingCapacity: number,
+    public readonly requestedCapacity: number,
+  ) {
+    super(
+      `Semaphore "${key}" already has capacity ${existingCapacity}, but ${requestedCapacity} was requested`,
+      "SEMAPHORE_CAPACITY_MISMATCH",
+    );
+  }
+}
+
+export class SemaphoreAcquisitionTimeoutError extends ConcurrencyError {
+  constructor(
+    public readonly key: string,
+    public readonly waitTimeoutMs: number,
+  ) {
+    super(
+      `Timed out while acquiring semaphore permit "${key}"`,
+      "SEMAPHORE_ACQUISITION_TIMEOUT",
+    );
+  }
+}
+
+export class SemaphoreAcquisitionAbortedError extends ConcurrencyError {
+  constructor(
+    public readonly key: string,
+    options?: ErrorOptions,
+  ) {
+    super(
+      `Semaphore acquisition was aborted for "${key}"`,
+      "SEMAPHORE_ACQUISITION_ABORTED",
+      options,
+    );
+  }
+}
