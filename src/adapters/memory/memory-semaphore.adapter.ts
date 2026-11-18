@@ -1,7 +1,7 @@
 import type { SemaphoreProvider } from "../../core/contracts/semaphore-provider.js";
 import type { PermitHandle } from "../../core/contracts/permit-handle.js";
 import type { ResolvedLockOptions } from "../../core/types/lock-options.js";
-
+import type { ProviderCapabilities } from "../../core/capabilities/provider-capabilities.js";
 import {
   SemaphoreAcquisitionAbortedError,
   SemaphoreAcquisitionTimeoutError,
@@ -27,7 +27,15 @@ interface SemaphoreState {
 
 export class MemorySemaphoreAdapter implements SemaphoreProvider {
   private readonly semaphores = new Map<string, SemaphoreState>();
-
+  readonly capabilities: ProviderCapabilities = {
+    scope: "process",
+    mutex: false,
+    semaphore: true,
+    leases: false,
+    leaseRenewal: false,
+    fencingTokens: false,
+    atomicOwnershipValidation: false,
+  };
   async acquire(
     key: string,
     capacity: number,
