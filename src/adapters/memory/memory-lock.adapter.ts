@@ -1,6 +1,7 @@
 import type { LockProvider } from "../../core/contracts/lock-provider.js";
 import type { LockHandle } from "../../core/contracts/lock-handle.js";
 import type { ResolvedLockOptions } from "../../core/types/lock-options.js";
+import type { ProviderCapabilities } from "../../core/capabilities/provider-capabilities.js";
 
 import {
   LockAcquisitionAbortedError,
@@ -35,6 +36,15 @@ interface LockState {
 export class MemoryLockAdapter implements LockProvider {
   private readonly locks = new Map<string, LockState>();
 
+  readonly capabilities: ProviderCapabilities = {
+    scope: "process",
+    mutex: true,
+    semaphore: false,
+    leases: false,
+    leaseRenewal: false,
+    fencingTokens: false,
+    atomicOwnershipValidation: false,
+  };
   /**
    * Acquires a lock for a particular resource.
    */
